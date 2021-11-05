@@ -1,21 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
 
-export default function App() {
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, SafeAreaView, ActivityIndicator } from 'react-native';
+//Hooks
+import React, { useState, useEffect } from 'react'
+//for permissions
+import { Camera } from 'expo-camera'
+import * as MediaLibrary from 'expo-media-library';
+
+//entry
+import EntryApp from './EntryApp';
+
+const App = () => {
+
+
+  const [state, setState] = useState({
+    cameraPermission: false,
+    mediaPermission: false,
+    root: 'Welcome'
+  })
+
+  const checkPermissions = async () => {
+    const cameraPermission = await Camera.requestPermissionsAsync();
+    const mediaPermission = await MediaLibrary.requestPermissionsAsync();
+    setState({
+      ...state,
+      cameraPermission: cameraPermission.status === 'granted',
+      mediaPermission: mediaPermission.status === 'granted',
+    })
+  }
+
+  useEffect(() => {
+    checkPermissions();
+  }, [])
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView  style={{flex: 1}}>
+      {
+        (!state.cameraPermission || !state.mediaPermission) &&
+        <ActivityIndicator />
+      }
+
+      {
+        state.cameraPermission && state.mediaPermission &&
+        <EntryApp root={state.root} />
+      }
+      {/* <StatusBar style="auto" /> */}
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+
+
+export default App;
